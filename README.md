@@ -1,11 +1,5 @@
 # SnowyParty
 
-A clean React + TypeScript + Vite SPA rebuild for party games. It includes responsive navigation, profile/economy/cosmetics, shop, room-code lobby, game catalog, Gun Battle and Meme Vs Meme rule surfaces, audio vault, and history.
+React + TypeScript + Vite party-game SPA. The lobby now supports host-created AI players with per-bot Easy, Medium, Hard, and Extreme difficulty. `src/botEngine.ts` centralizes difficulty-weighted Gun Battle decisions, tactical shield/dodge behavior, synergized Meme Vs Meme remix selection, and placement rewards.
 
-## Run
-
-npm install && npm run dev
-
-## Production integration notes
-
-The UI uses a local friendly state engine so it is immediately demoable. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` and wire room/player/game persistence through Supabase Realtime, Auth, Storage, and Postgres policies. MediaRecorder is represented by the mic test control and should be connected to Storage for production clips.
+Run with `npm install && npm run dev`. The current game loops are local and playable; connect room state, authoritative rewards, Supabase Auth/Realtime/Storage, and MediaRecorder persistence for production.
