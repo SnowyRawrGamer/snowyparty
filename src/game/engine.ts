@@ -1,0 +1,6 @@
+import type {Action,Player,GunBattleState} from './types';
+export const initialState=():GunBattleState=>({phase:'lobby',round:0,countdown:0,actions:{},revealed:false,suddenDeath:false});
+export function resolveRound(players:Player[], actions:Record<string,Action>, state:GunBattleState){const next=players.map(p=>({...p})); const by=Object.fromEntries(next.map(p=>[p.id,p])); let shots=0,damage=0;
+ for(const a of Object.values(actions)){const p=by[a.playerId]; if(!p||p.eliminated)continue; if(a.type==='shoot'&&p.ammo>0){p.ammo--;shots++} if(a.type==='reload')p.ammo++; if(a.type==='money')p.money+=200;}
+ const live=next.filter(p=>!p.eliminated); for(const a of Object.values(actions)){if(a.type!=='shoot')continue; const target=live.find(p=>p.id!==a.playerId); if(!target)continue; const shield=actions[target.id]?.type==='shield'; if(!shield){target.lives--;damage++;}}
+ for(const p of next) if(p.lives<=0)p.eliminated=true; if(next.filter(p=>!p.eliminated).length===0){for(const p of next){p.eliminated=false;p.lives=1;p.ammo=Math.max(p.ammo,1)}state={...state,suddenDeath:true,recap:'SUDDEN DEATH!'};} const winner=next.find(p=>!p.eliminated); return {players:next,state:{...state,phase:winner?'podium':'recap',round:state.round+1,actions:{},revealed:false,winnerId:winner?.id,recap:state.recap??`${shots} shot${shots===1?'':'s'} fired • ${damage} damage`}}; }
