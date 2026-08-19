@@ -1,0 +1,10 @@
+create extension if not exists pgcrypto;
+create type room_state as enum ('lobby','countdown','playing','round_recap','game_over','podium');
+create table if not exists public.rooms (id uuid primary key default gen_random_uuid(), code text not null, host_id uuid not null default gen_random_uuid(), game text not null default 'Gun Battle', state room_state not null default 'lobby', round int not null default 1, sound_on boolean not null default true, created_at timestamptz not null default now(), ended_at timestamptz);
+create unique index if not exists active_room_code on public.rooms(code) where ended_at is null;
+create table if not exists public.room_players (id uuid primary key default gen_random_uuid(), room_id uuid not null references public.rooms(id) on delete cascade, name text not null, avatar text not null default '❄️', title text not null default 'Ready to party', ready boolean not null default false, score int not null default 0, lives int not null default 3, ammo int not null default 3, joined_at timestamptz not null default now());
+alter table public.rooms enable row level security; alter table public.room_players enable row level security;
+create policy "room read" on public.rooms for select using (true); create policy "room create" on public.rooms for insert with check (true); create policy "room update" on public.rooms for update using (true);
+create policy "players read" on public.room_players for select using (true); create policy "players join" on public.room_players for insert with check (true); create policy "players update" on public.room_players for update using (true); create policy "players leave" on public.room_players for delete using (true);
+alter publication supabase_realtime add table public.rooms; alter publication supabase_realtime add table public.room_players;
+create or replace function end_room(room_uuid uuid) returns void language sql security definer as $$ update public.rooms set ended_at=now(), state='game_over' where id=room_uuid; $$;
